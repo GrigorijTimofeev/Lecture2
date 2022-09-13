@@ -70,7 +70,7 @@ public class Lecture2 {
 
         //TASK2
         System.out.println("===Task2===");
-        System.out.println(task2(asList(3, 4, 2, 7), 10));
+        System.out.println(task2(asList(3, 4, 2, 7), 10)); // [3, 7]
 
         //tests
         // System.out.println("============");
@@ -107,26 +107,12 @@ public class Lecture2 {
         if (RAW_DATA == null || RAW_DATA.length == 0)
             return;
 
-        //sorting
-        List<Person> sortedList = Arrays.asList(RAW_DATA).stream()
+        Map<String, Long> result = Arrays.asList(RAW_DATA).stream()
             .filter(Objects::nonNull)
             .sorted((o1, o2) -> o1.getName().compareTo(o2.getName()))
             .sorted((o1, o2) -> (o1.getName().equals(o2.getName())) ? o2.getId() - o1.getId() : 1)
-            .collect(Collectors.toList());        
-
-        // removing duplicates
-        for (int i = 0; i < sortedList.size() - 1; i++) {
-            Person tmp = new Person(sortedList.get(i).getId(), sortedList.get(i).getName());
-            for (int j = i + 1; j < sortedList.size(); j++) {
-                if (sortedList.get(j).equals(tmp)) {
-                    sortedList.remove(j);
-                }
-            }
-        }
-
-        //grouping by
-        Map<String, Long> result = sortedList.stream()
-            .collect(Collectors.groupingBy(Person::getName, LinkedHashMap::new, Collectors.counting()));
+            .distinct()
+            .collect(Collectors.groupingBy(Person::getName, LinkedHashMap::new, Collectors.counting()));       
 
         for (var entry : result.entrySet()) {
             System.out.println("Key: " + entry.getKey());
@@ -135,27 +121,21 @@ public class Lecture2 {
         
     }
 
-    static List<Integer> task2 (List<Integer> input, int number) {
+    static List<Integer> task2 (List<Integer> input, int target) {
 
         if (input == null || input.size() == 0)
             return null;
 
         List<Integer> result = new ArrayList<>(2);
-        Collections.sort(input);
-        int start = 0;
-        int end = input.size() - 1;
-
-        while (start < end) {
-            int sum = input.get(start) + input.get(end);
-
-            if (sum == number) {
-                result.add(input.get(start));
-                result.add(input.get(end));
+        Map<Integer, Integer> map = new HashMap<>();
+        for (int i = 0; i < input.size(); i++) {
+            map.put(target - input.get(i), input.get(i));
+        }
+        for (Integer number : input) {
+            if (map.containsKey(number)) {
+                result.add(number);
+                result.add(map.get(number));
                 return result;
-            } else if (sum < number) {
-                start++;
-            } else {
-                end--;
             }
         }
 
@@ -166,15 +146,14 @@ public class Lecture2 {
 
         int i = 0;
         int j = 0;
+
         while (i < s1.length() && j < s2.length()) {
-            while (j < s2.length()) {
-                if (s1.charAt(i) == s2.charAt(j)) {
-                    j++;
-                    break;
-                }
+            if (s1.charAt(i) == s2.charAt(j)) {
+                i++; 
+                j++;
+            } else {
                 j++;
             }
-            i++;
         }
 
         if (j == s2.length() && i < s1.length())
